@@ -19,6 +19,17 @@ from llm.qwen2_modeling import Qwen2
 from utils import add_text_with_background
 
 
+import IPython.display as display
+from PIL import Image
+import io
+
+def display_frame(frame):
+    """Convert frame to PIL Image and display it."""
+    img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    bio = io.BytesIO()
+    img.save(bio, format="PNG")
+    display.display(display.Image(bio.getvalue()))
+
 # use bfloat16 for the entire notebook
 torch.autocast(device_type="cuda", dtype=torch.bfloat16).__enter__()
 if torch.cuda.get_device_properties(0).major >= 8:
@@ -167,13 +178,20 @@ async def main(model="gpt-4o-2024-05-13"):
         
         if query:
             frame = add_text_with_background(frame, query)
-
+            #OLD, pre-commented in original code to avoid writing frames as JPG files to disk
             # cv2.imshow("frame", frame)
             # cv2.imwrite(f"output/frame_{idx}.jpg", frame)
             # idx += 1
+
+        # Display the frame in the notebook
+        display_frame(frame)
+        
+        # Clear output for smooth animation
+        display.clear_output(wait=True)
+            
             
         # Ensure tasks are running
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.1)  # Adjust sleep time to control animation speed
 
         
         frame_list.append(frame)
